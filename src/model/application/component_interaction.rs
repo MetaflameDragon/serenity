@@ -54,7 +54,8 @@ pub struct ComponentInteraction {
     pub version: u8,
     /// The message this interaction was triggered by, if it is a component.
     pub message: Box<Message>,
-    /// Permissions the app or bot has within the channel the interaction was sent from.
+    /// Permissions the app or bot has within the channel the interaction was
+    /// sent from.
     pub app_permissions: Option<Permissions>,
     /// The selected language of the invoking user.
     pub locale: String,
@@ -62,7 +63,8 @@ pub struct ComponentInteraction {
     pub guild_locale: Option<String>,
     /// For monetized applications, any entitlements of the invoking user.
     pub entitlements: Vec<Entitlement>,
-    /// The owners of the applications that authorized the interaction, such as a guild or user.
+    /// The owners of the applications that authorized the interaction, such as
+    /// a guild or user.
     #[serde(default)]
     pub authorizing_integration_owners: AuthorizingIntegrationOwners,
     /// The context where the interaction was triggered from.
@@ -86,9 +88,10 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error::Model`] if the message content is too long. May also return an
-    /// [`Error::Http`] if the API returns an error, or an [`Error::Json`] if there is an error in
-    /// deserializing the API response.
+    /// Returns an [`Error::Model`] if the message content is too long. May also
+    /// return an [`Error::Http`] if the API returns an error, or an
+    /// [`Error::Json`] if there is an error in deserializing the API
+    /// response.
     pub async fn create_response(
         &self,
         cache_http: impl CacheHttp,
@@ -103,9 +106,10 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error::Model`] if the message content is too long. May also return an
-    /// [`Error::Http`] if the API returns an error, or an [`Error::Json`] if there is an error in
-    /// deserializing the API response.
+    /// Returns an [`Error::Model`] if the message content is too long. May also
+    /// return an [`Error::Http`] if the API returns an error, or an
+    /// [`Error::Json`] if there is an error in deserializing the API
+    /// response.
     pub async fn edit_response(
         &self,
         cache_http: impl CacheHttp,
@@ -120,8 +124,8 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// May return [`Error::Http`] if the API returns an error. Such as if the response was already
-    /// deleted.
+    /// May return [`Error::Http`] if the API returns an error. Such as if the
+    /// response was already deleted.
     pub async fn delete_response(&self, http: impl AsRef<Http>) -> Result<()> {
         http.as_ref().delete_original_interaction_response(&self.token).await
     }
@@ -132,9 +136,9 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::Model`] if the content is too long. May also return [`Error::Http`] if the
-    /// API returns an error, or [`Error::Json`] if there is an error in deserializing the
-    /// response.
+    /// Returns [`Error::Model`] if the content is too long. May also return
+    /// [`Error::Http`] if the API returns an error, or [`Error::Json`] if
+    /// there is an error in deserializing the response.
     pub async fn create_followup(
         &self,
         cache_http: impl CacheHttp,
@@ -149,9 +153,9 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::Model`] if the content is too long. May also return [`Error::Http`] if the
-    /// API returns an error, or [`Error::Json`] if there is an error in deserializing the
-    /// response.
+    /// Returns [`Error::Model`] if the content is too long. May also return
+    /// [`Error::Http`] if the API returns an error, or [`Error::Json`] if
+    /// there is an error in deserializing the response.
     pub async fn edit_followup(
         &self,
         cache_http: impl CacheHttp,
@@ -165,8 +169,8 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// May return [`Error::Http`] if the API returns an error. Such as if the response was already
-    /// deleted.
+    /// May return [`Error::Http`] if the API returns an error. Such as if the
+    /// response was already deleted.
     pub async fn delete_followup<M: Into<MessageId>>(
         &self,
         http: impl AsRef<Http>,
@@ -179,8 +183,8 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// May return [`Error::Http`] if the API returns an error. Such as if the response was
-    /// deleted.
+    /// May return [`Error::Http`] if the API returns an error. Such as if the
+    /// response was deleted.
     pub async fn get_followup<M: Into<MessageId>>(
         &self,
         http: impl AsRef<Http>,
@@ -193,8 +197,9 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// Returns an [`Error::Http`] if the API returns an error, or an [`Error::Json`] if there is
-    /// an error in deserializing the API response.
+    /// Returns an [`Error::Http`] if the API returns an error, or an
+    /// [`Error::Json`] if there is an error in deserializing the API
+    /// response.
     pub async fn defer(&self, cache_http: impl CacheHttp) -> Result<()> {
         self.create_response(cache_http, CreateInteractionResponse::Acknowledge).await
     }
@@ -203,8 +208,9 @@ impl ComponentInteraction {
     ///
     /// # Errors
     ///
-    /// May also return an [`Error::Http`] if the API returns an error, or an [`Error::Json`] if
-    /// there is an error in deserializing the API response.
+    /// May also return an [`Error::Http`] if the API returns an error, or an
+    /// [`Error::Json`] if there is an error in deserializing the API
+    /// response.
     pub async fn defer_ephemeral(&self, cache_http: impl CacheHttp) -> Result<()> {
         let builder = CreateInteractionResponse::Defer(
             CreateInteractionResponseMessage::new().ephemeral(true),
@@ -234,7 +240,8 @@ impl<'de> Deserialize<'de> for ComponentInteraction {
         let mut interaction = Self::deserialize(deserializer)?;
         if let (Some(guild_id), Some(member)) = (interaction.guild_id, &mut interaction.member) {
             member.guild_id = guild_id;
-            // If `member` is present, `user` wasn't sent and is still filled with default data
+            // If `member` is present, `user` wasn't sent and is still filled with default
+            // data
             interaction.user = member.user.clone();
         }
         Ok(interaction)
@@ -253,10 +260,15 @@ impl Serialize for ComponentInteraction {
 pub enum ComponentInteractionDataKind {
     Button,
     StringSelect { values: Vec<String> },
+    InputText { value: String },
     UserSelect { values: Vec<UserId> },
     RoleSelect { values: Vec<RoleId> },
     MentionableSelect { values: Vec<GenericId> },
     ChannelSelect { values: Vec<ChannelId> },
+    TextDisplay,
+    Label { component: Box<ComponentInteractionData> }, // Recursive - Box
+    FileUpload { values: Vec<AttachmentId> },           /* File IDs - unsure if these are
+                                                         * attachments? */
     Unknown(u8),
 }
 
@@ -267,6 +279,8 @@ impl<'de> Deserialize<'de> for ComponentInteractionDataKind {
         struct Json {
             component_type: ComponentType,
             values: Option<json::Value>,
+            value: Option<String>, // For Text Input / InputText
+            component: Option<ComponentInteractionData>, // For Label
         }
         let json = Json::deserialize(deserializer)?;
 
@@ -282,6 +296,9 @@ impl<'de> Deserialize<'de> for ComponentInteractionDataKind {
             ComponentType::StringSelect => Self::StringSelect {
                 values: parse_values!(),
             },
+            ComponentType::InputText => Self::InputText {
+                value: json.value.ok_or_else(|| D::Error::missing_field("value"))?,
+            },
             ComponentType::UserSelect => Self::UserSelect {
                 values: parse_values!(),
             },
@@ -294,8 +311,24 @@ impl<'de> Deserialize<'de> for ComponentInteractionDataKind {
             ComponentType::ChannelSelect => Self::ChannelSelect {
                 values: parse_values!(),
             },
+            ComponentType::TextDisplay => Self::TextDisplay,
+            ComponentType::Label => Self::Label {
+                component: Box::new(
+                    json.component.ok_or_else(|| D::Error::missing_field("component"))?,
+                ),
+            },
+            ComponentType::FileUpload => Self::FileUpload {
+                values: parse_values!(),
+            },
             ComponentType::Unknown(x) => Self::Unknown(x),
-            x @ (ComponentType::ActionRow | ComponentType::InputText) => {
+            x @ (ComponentType::ActionRow
+            | ComponentType::InputText
+            | ComponentType::Section
+            | ComponentType::Thumbnail
+            | ComponentType::MediaGallery
+            | ComponentType::File
+            | ComponentType::Separator
+            | ComponentType::Container) => {
                 return Err(D::Error::custom(format_args!(
                     "invalid message component type in this context: {x:?}",
                 )));
@@ -311,27 +344,35 @@ impl Serialize for ComponentInteractionDataKind {
         map.serialize_entry("component_type", &match self {
             Self::Button { .. } => 2,
             Self::StringSelect { .. } => 3,
+            Self::InputText { .. } => 4,
             Self::UserSelect { .. } => 5,
             Self::RoleSelect { .. } => 6,
             Self::MentionableSelect { .. } => 7,
             Self::ChannelSelect { .. } => 8,
+            Self::TextDisplay => 10,
+            Self::Label { .. } => 18,
+            Self::FileUpload { .. } => 19,
             Self::Unknown(x) => *x,
         })?;
 
         match self {
             Self::StringSelect { values } => map.serialize_entry("values", values)?,
+            Self::InputText { value } => map.serialize_entry("value", value)?,
             Self::UserSelect { values } => map.serialize_entry("values", values)?,
             Self::RoleSelect { values } => map.serialize_entry("values", values)?,
             Self::MentionableSelect { values } => map.serialize_entry("values", values)?,
             Self::ChannelSelect { values } => map.serialize_entry("values", values)?,
-            Self::Button | Self::Unknown(_) => map.serialize_entry("values", &None::<()>)?,
+            Self::Label { component } => map.serialize_entry("component", component)?,
+            Self::FileUpload { values } => map.serialize_entry("values", values)?,
+            Self::Button | Self::TextDisplay | Self::Unknown(_) => map.serialize_entry("values", &None::<()>)?,
         }
 
         map.end()
     }
 }
 
-/// A message component interaction data, provided by [`ComponentInteraction::data`]
+/// A message component interaction data, provided by
+/// [`ComponentInteraction::data`]
 ///
 /// [Discord docs](https://discord.com/developers/docs/interactions/receiving-and-responding#interaction-object-message-component-data-structure).
 #[cfg_attr(feature = "typesize", derive(typesize::derive::TypeSize))]
@@ -339,11 +380,13 @@ impl Serialize for ComponentInteractionDataKind {
 #[non_exhaustive]
 pub struct ComponentInteractionData {
     /// The custom id of the component.
+    #[serde(default)]
     pub custom_id: String,
     /// Type and type-specific data of this component interaction.
     #[serde(flatten)]
     pub kind: ComponentInteractionDataKind,
-    /// The parameters and the given values. The converted objects from the given options.
+    /// The parameters and the given values. The converted objects from the
+    /// given options.
     #[serde(default)]
     pub resolved: CommandDataResolved,
 }

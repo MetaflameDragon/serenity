@@ -21,6 +21,15 @@ enum_number! {
         RoleSelect = 6,
         MentionableSelect = 7,
         ChannelSelect = 8,
+        Section = 9,
+        TextDisplay = 10,
+        Thumbnail = 11,
+        MediaGallery = 12,
+        File = 13,
+        Separator = 14,
+        Container = 17,
+        Label = 18,
+        FileUpload = 19,
         _ => Unknown(u8),
     }
 }
@@ -67,8 +76,19 @@ impl<'de> Deserialize<'de> for ActionRowComponent {
             | ComponentType::RoleSelect
             | ComponentType::MentionableSelect
             | ComponentType::ChannelSelect => from_value(value).map(ActionRowComponent::SelectMenu),
-            ComponentType::ActionRow => {
-                return Err(DeError::custom("Invalid component type ActionRow"))
+            comp @ (ComponentType::ActionRow
+            | ComponentType::Label
+            | ComponentType::Section
+            | ComponentType::Separator
+            | ComponentType::Container
+            | ComponentType::Thumbnail
+            | ComponentType::MediaGallery
+            | ComponentType::File
+            | ComponentType::FileUpload
+            | ComponentType::TextDisplay) => {
+                return Err(DeError::custom(format!(
+                    "Invalid component type {comp:?} in ActionRow"
+                )))
             },
             ComponentType::Unknown(i) => {
                 return Err(DeError::custom(format_args!("Unknown component type {i}")))
@@ -304,6 +324,76 @@ enum_number! {
         Short = 1,
         Paragraph = 2,
         _ => Unknown(u8),
+    }
+}
+
+#[cfg_attr(feature = "typesize", derive(typesize::derive::TypeSize))]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
+pub struct Label {
+    /// Always [`ComponentType::Label`]
+    #[serde(rename = "type")]
+    pub kind: ComponentType,
+    /// The components of this ActionRow.
+    #[serde(default)]
+    pub components: Vec<LabelComponent>,
+}
+
+#[cfg_attr(feature = "typesize", derive(typesize::derive::TypeSize))]
+#[derive(Clone, Debug)]
+#[non_exhaustive]
+pub enum LabelComponent {
+    InputText(InputText),
+    SelectMenu(SelectMenu),
+    // TODO File Upload
+}
+
+impl<'de> Deserialize<'de> for LabelComponent {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> std::result::Result<Self, D::Error> {
+        let map = JsonMap::deserialize(deserializer)?;
+
+        let raw_kind = map.get("type").ok_or_else(|| DeError::missing_field("type"))?.clone();
+        let value = Value::from(map);
+
+        match deserialize_val(raw_kind)? {
+            ComponentType::Button => {
+                return Err(DeError::custom("Invalid component type Button in Label"))
+            },
+            ComponentType::InputText => from_value(value).map(LabelComponent::InputText),
+            ComponentType::StringSelect
+            | ComponentType::UserSelect
+            | ComponentType::RoleSelect
+            | ComponentType::MentionableSelect
+            | ComponentType::ChannelSelect => from_value(value).map(LabelComponent::SelectMenu),
+            ComponentType::FileUpload => {
+                // TODO
+                return Err(DeError::custom("FileUpload in Label not yet implemented"));
+            },
+            comp @ (ComponentType::ActionRow
+            | ComponentType::Label
+            | ComponentType::Section
+            | ComponentType::Separator
+            | ComponentType::Container
+            | ComponentType::Thumbnail
+            | ComponentType::MediaGallery
+            | ComponentType::File
+            | ComponentType::TextDisplay) => {
+                return Err(DeError::custom(format!("Invalid component type {comp:?} in Label")))
+            },
+            ComponentType::Unknown(i) => {
+                return Err(DeError::custom(format_args!("Unknown component type {i}")))
+            },
+        }
+        .map_err(DeError::custom)
+    }
+}
+
+impl Serialize for LabelComponent {
+    fn serialize<S: Serializer>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error> {
+        match self {
+            Self::InputText(c) => c.serialize(serializer),
+            Self::SelectMenu(c) => c.serialize(serializer),
+        }
     }
 }
 

@@ -221,5 +221,13 @@ pub struct ModalInteractionData {
     /// The custom id of the modal
     pub custom_id: String,
     /// The components.
-    pub components: Vec<ActionRow>,
+    pub components: Vec<ModalComponent>,
+}
+
+#[cfg_attr(feature = "typesize", derive(typesize::derive::TypeSize))]
+#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[non_exhaustive]
+pub enum ModalComponent {
+    ActionRow(ActionRow),
+    Label(Label),
 }

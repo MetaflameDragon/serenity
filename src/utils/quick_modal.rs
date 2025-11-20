@@ -15,7 +15,8 @@ pub struct QuickModalResponse {
     pub inputs: Vec<String>,
 }
 
-/// Convenience builder to create a modal, wait for the user to submit and parse the response.
+/// Convenience builder to create a modal, wait for the user to submit and parse
+/// the response.
 ///
 /// ```rust
 /// # use serenity::{builder::*, model::prelude::*, prelude::*, utils::CreateQuickModal, Result};
@@ -51,8 +52,8 @@ impl CreateQuickModal {
 
     /// Sets a timeout when waiting for the modal response.
     ///
-    /// You should almost always set a timeout here. Otherwise, if the user exits the modal, you
-    /// will wait forever.
+    /// You should almost always set a timeout here. Otherwise, if the user
+    /// exits the modal, you will wait forever.
     pub fn timeout(mut self, timeout: std::time::Duration) -> Self {
         self.timeout = Some(timeout);
         self
@@ -60,8 +61,9 @@ impl CreateQuickModal {
 
     /// Adds an input text field.
     ///
-    /// As the `custom_id` field of [`CreateInputText`], just supply an empty string. All custom
-    /// IDs are overwritten by [`CreateQuickModal`] when sending the modal.
+    /// As the `custom_id` field of [`CreateInputText`], just supply an empty
+    /// string. All custom IDs are overwritten by [`CreateQuickModal`] when
+    /// sending the modal.
     pub fn field(mut self, input_text: CreateInputText) -> Self {
         self.input_texts.push(input_text);
         self
@@ -120,22 +122,42 @@ impl CreateQuickModal {
             .data
             .components
             .iter()
-            .filter_map(|row| match row.components.first() {
-                Some(ActionRowComponent::InputText(text)) => {
-                    if let Some(value) = &text.value {
-                        Some(value.clone())
-                    } else {
-                        tracing::warn!("input text value was empty in modal response");
+            .filter_map(|comp| match comp {
+                ModalComponent::ActionRow(row) => match row.components.first() {
+                    Some(ActionRowComponent::InputText(text)) => {
+                        if let Some(value) = &text.value {
+                            Some(value.clone())
+                        } else {
+                            tracing::warn!("input text value was empty in modal response");
+                            None
+                        }
+                    },
+                    Some(other) => {
+                        tracing::warn!("expected input text in modal response, got {:?}", other);
                         None
-                    }
+                    },
+                    None => {
+                        tracing::warn!("empty action row");
+                        None
+                    },
                 },
-                Some(other) => {
-                    tracing::warn!("expected input text in modal response, got {:?}", other);
-                    None
-                },
-                None => {
-                    tracing::warn!("empty action row");
-                    None
+                ModalComponent::Label(label) => match label.components.first() {
+                    Some(LabelComponent::InputText(text)) => {
+                        if let Some(value) = &text.value {
+                            Some(value.clone())
+                        } else {
+                            tracing::warn!("input text value was empty in modal response");
+                            None
+                        }
+                    },
+                    Some(other) => {
+                        tracing::warn!("expected input text in modal response, got {:?}", other);
+                        None
+                    },
+                    None => {
+                        tracing::warn!("empty label");
+                        None
+                    },
                 },
             })
             .collect();

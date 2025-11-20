@@ -305,6 +305,8 @@ bitflags! {
         const EPHEMERAL = 1 << 6;
         /// Does not trigger push notifications or desktop notifications.
         const SUPPRESS_NOTIFICATIONS = 1 << 12;
+        /// Required for component-driven messages
+        const IS_COMPONENTS_V2 = 1 << 15;
     }
 }
 
