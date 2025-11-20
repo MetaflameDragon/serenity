@@ -1,3 +1,4 @@
+use serde::de::{Error, Unexpected};
 use serde::Serialize;
 
 #[cfg(feature = "model")]
@@ -11,6 +12,7 @@ use crate::builder::{
 #[cfg(feature = "model")]
 use crate::http::{CacheHttp, Http};
 use crate::internal::prelude::*;
+use crate::json;
 use crate::model::prelude::*;
 
 /// An interaction triggered by a modal submit.
@@ -225,9 +227,50 @@ pub struct ModalInteractionData {
 }
 
 #[cfg_attr(feature = "typesize", derive(typesize::derive::TypeSize))]
-#[derive(Clone, Debug, Deserialize, serde::Serialize)]
+#[derive(Clone, Debug, serde::Serialize)]
 #[non_exhaustive]
+#[serde(untagged)]
 pub enum ModalComponent {
     ActionRow(ActionRow),
     Label(Label),
+}
+
+impl<'de> Deserialize<'de> for ModalComponent {
+    fn deserialize<D>(deserializer: D) -> StdResult<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        // Match on the component kind first
+        #[derive(Deserialize)]
+        struct Json {
+            #[serde(rename = "type")]
+            kind: ComponentType,
+            #[serde(rename = "components")]
+            action_row_components: Option<Vec<ActionRowComponent>>,
+            #[serde(rename = "component")]
+            label_component: Option<LabelComponent>,
+        }
+        let json = Json::deserialize(deserializer)?;
+
+        Ok(match json.kind {
+            ComponentType::ActionRow => ModalComponent::ActionRow(ActionRow {
+                kind: ComponentType::ActionRow,
+                components: json
+                    .action_row_components
+                    .ok_or_else(|| D::Error::missing_field("components"))?,
+            }),
+            ComponentType::Label => ModalComponent::Label(Label {
+                kind: ComponentType::Label,
+                component: json
+                    .label_component
+                    .ok_or_else(|| D::Error::missing_field("component"))?,
+            }),
+            other => {
+                return Err(D::Error::invalid_value(
+                    Unexpected::Unsigned(u8::from(other) as u64),
+                    &"1, 18",
+                ))
+            },
+        })
+    }
 }

@@ -334,9 +334,8 @@ pub struct Label {
     /// Always [`ComponentType::Label`]
     #[serde(rename = "type")]
     pub kind: ComponentType,
-    /// The components of this ActionRow.
-    #[serde(default)]
-    pub components: Vec<LabelComponent>,
+    /// The component of this Label.
+    pub component: LabelComponent,
 }
 
 #[cfg_attr(feature = "typesize", derive(typesize::derive::TypeSize))]

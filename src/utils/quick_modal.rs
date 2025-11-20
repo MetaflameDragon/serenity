@@ -141,8 +141,8 @@ impl CreateQuickModal {
                         None
                     },
                 },
-                ModalComponent::Label(label) => match label.components.first() {
-                    Some(LabelComponent::InputText(text)) => {
+                ModalComponent::Label(label) => match &label.component {
+                    LabelComponent::InputText(text) => {
                         if let Some(value) = &text.value {
                             Some(value.clone())
                         } else {
@@ -150,12 +150,8 @@ impl CreateQuickModal {
                             None
                         }
                     },
-                    Some(other) => {
+                    other => {
                         tracing::warn!("expected input text in modal response, got {:?}", other);
-                        None
-                    },
-                    None => {
-                        tracing::warn!("empty label");
                         None
                     },
                 },
