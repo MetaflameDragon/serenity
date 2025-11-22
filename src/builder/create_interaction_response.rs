@@ -11,7 +11,9 @@ use super::{
     CreateLabel,
     CreateLabelComponent,
     CreatePoll,
+    CreateSection,
     CreateSelectMenu,
+    CreateTextDisplay,
     EditAttachments,
 };
 #[cfg(feature = "http")]
@@ -328,7 +330,12 @@ impl CreateInteractionResponseMessage {
 #[serde(untagged)]
 pub enum CreateMessageComponent {
     ActionRow(CreateActionRow),
-    Other(serde_json::Value), // TODO TMP
+    TextDisplay(CreateTextDisplay),
+    Section(CreateSection),
+    // TODO Separator,
+    // TODO Container,
+    // TODO MediaGallery
+    // TODO File
 }
 
 impl CreateMessageComponent {

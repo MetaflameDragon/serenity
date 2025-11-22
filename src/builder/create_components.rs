@@ -491,3 +491,135 @@ impl CreateLabel {
         self
     }
 }
+
+#[derive(Clone, Debug, Serialize, PartialEq)]
+pub struct CreateSection {
+    /// Always [`ComponentType::Section`]
+    #[serde(rename = "type")]
+    pub kind: ComponentType,
+    pub components: Vec<CreateSectionComponent>,
+    pub accessory: CreateSectionAccessory,
+}
+
+impl CreateSection {
+    pub fn new(components: Vec<CreateSectionComponent>, accessory: impl Into<CreateSectionAccessory>) -> Self {
+        CreateSection {
+            kind: ComponentType::Section,
+            components,
+            accessory: accessory.into(),
+        }
+    }
+
+    // TODO Are these a good idea? they feel like they could be more ergonomic with the `Into`s
+    pub fn single(
+        comp1: impl Into<CreateSectionComponent>,
+        accessory: impl Into<CreateSectionAccessory>,
+    ) -> Self {
+        Self::new(vec![comp1.into()], accessory.into())
+    }
+
+    pub fn double(
+        comp1: impl Into<CreateSectionComponent>,
+        comp2: impl Into<CreateSectionComponent>,
+        accessory: impl Into<CreateSectionAccessory>,
+    ) -> Self {
+        Self::new(vec![comp1.into(), comp2.into()], accessory.into())
+    }
+
+    pub fn triple(
+        comp1: impl Into<CreateSectionComponent>,
+        comp2: impl Into<CreateSectionComponent>,
+        comp3: impl Into<CreateSectionComponent>,
+        accessory: impl Into<CreateSectionAccessory>,
+    ) -> Self {
+        Self::new(vec![comp1.into(), comp2.into(), comp3.into()], accessory.into())
+    }
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq)]
+#[serde(untagged)]
+pub enum CreateSectionComponent {
+    TextDisplay(CreateTextDisplay),
+}
+
+impl From<CreateTextDisplay> for CreateSectionComponent {
+    fn from(input: CreateTextDisplay) -> Self {
+        Self::TextDisplay(input)
+    }
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq)]
+#[serde(untagged)]
+pub enum CreateSectionAccessory {
+    Button(CreateButton),
+    Thumbnail(CreateThumbnail),
+}
+
+impl From<CreateButton> for CreateSectionAccessory {
+    fn from(input: CreateButton) -> Self {
+        Self::Button(input)
+    }
+}
+
+impl From<CreateThumbnail> for CreateSectionAccessory {
+    fn from(input: CreateThumbnail) -> Self {
+        Self::Thumbnail(input)
+    }
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq)]
+pub struct CreateThumbnail {
+    /// Always [`ComponentType::Thumbnail`]
+    #[serde(rename = "type")]
+    pub kind: ComponentType,
+    pub media: CreateUnfurledMediaItem,
+    /// Alt text for the media, max 1024 characters
+    pub description: Option<String>,
+    #[serde(default)] // Defaults to false
+    pub spoiler: bool,
+}
+
+impl CreateThumbnail {
+    pub fn new(url: impl Into<String>) -> Self {
+        CreateThumbnail {
+            kind: ComponentType::Thumbnail,
+            media: CreateUnfurledMediaItem { url: url.into() },
+            description: None,
+            spoiler: false,
+        }
+    }
+
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+
+    pub fn spoiler(mut self, spoiler: bool) -> Self {
+        self.spoiler = spoiler;
+        self
+    }
+
+    pub fn url(mut self, url: impl Into<String>) -> Self {
+        self.media = CreateUnfurledMediaItem { url: url.into() };
+        self
+    }
+}
+
+/// Builder for Unfurled Media Item.
+///
+/// Only contains the url, as all other fields are ignored by the API
+/// (and only relevant in a response).
+#[derive(Clone, Debug, Serialize, PartialEq)]
+pub struct CreateUnfurledMediaItem {
+    pub url: String,
+}
+
+// TODO move elsewhere?
+pub struct UnfurledMediaItem {
+    pub url: String,
+    pub proxy_url: Option<String>,
+    pub height: Option<usize>,
+    pub width: Option<usize>,
+    pub content_type: Option<String>,
+    pub attachment_id: Option<AttachmentId>,
+}
