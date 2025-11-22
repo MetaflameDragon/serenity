@@ -7,6 +7,9 @@ use super::{
     CreateAttachment,
     CreateButton,
     CreateEmbed,
+    CreateInputText,
+    CreateLabel,
+    CreateLabelComponent,
     CreatePoll,
     CreateSelectMenu,
     EditAttachments,
@@ -453,7 +456,8 @@ impl Builder for CreateAutocompleteResponse {
 #[derive(Clone, Debug, Default, Serialize)]
 #[must_use]
 pub struct CreateModal {
-    components: Vec<CreateActionRow>,
+    /// Up to 5 components
+    components: Vec<CreateModalComponent>,
     custom_id: String,
     title: String,
 }
@@ -468,11 +472,43 @@ impl CreateModal {
         }
     }
 
-    /// Sets the components of this message.
+    /// Sets the components of this message. Up to 5 components are allowed.
     ///
     /// Overwrites existing components.
-    pub fn components(mut self, components: Vec<CreateActionRow>) -> Self {
+    pub fn components(mut self, components: Vec<CreateModalComponent>) -> Self {
         self.components = components;
         self
+    }
+
+    /// A convenience method for pushing multiple types of [`CreateModalComponent`]s.
+    pub fn push_component(mut self, component: impl Into<CreateModalComponent>) -> Self {
+        self.components.push(component.into());
+        self
+    }
+}
+
+#[must_use]
+#[derive(Clone, Debug, Serialize, PartialEq)]
+#[serde(untagged)]
+pub enum CreateModalComponent {
+    Label(CreateLabel),
+    // TODO FileUpload
+}
+
+impl From<CreateLabel> for CreateModalComponent {
+    fn from(label: CreateLabel) -> Self {
+        Self::Label(label)
+    }
+}
+
+impl CreateModalComponent {
+    /// Convenience method for [`CreateLabelComponent::SelectMenu`]
+    pub fn select_menu(label: impl Into<String>, select_menu: CreateSelectMenu) -> Self {
+        Self::Label(CreateLabel::new(label, CreateLabelComponent::SelectMenu(select_menu)))
+    }
+
+    /// Convenience method for [`CreateLabelComponent::InputText`]
+    pub fn input_text(label: impl Into<String>, input_text: CreateInputText) -> Self {
+        Self::Label(CreateLabel::new(label, CreateLabelComponent::InputText(input_text)))
     }
 }

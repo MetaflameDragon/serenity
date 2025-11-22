@@ -335,7 +335,9 @@ pub struct Label {
     pub kind: ComponentType,
     /// The component of this Label.
     pub component: LabelComponent,
-    // TODO other parts
+    // TODO: label and description are missing,
+    //   but this struct is only used in interaction responses, where those aren't sent.
+    //   Should they be present here?
 }
 
 #[cfg_attr(feature = "typesize", derive(typesize::derive::TypeSize))]

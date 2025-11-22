@@ -443,3 +443,51 @@ impl CreateTextDisplay {
         })
     }
 }
+
+#[derive(Clone, Debug, Serialize, PartialEq)]
+#[must_use]
+pub struct CreateLabel {
+    #[serde(rename = "type")]
+    pub kind: ComponentType,
+    pub label: String,
+    pub description: Option<String>,
+    pub component: CreateLabelComponent,
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq)]
+#[serde(untagged)]
+pub enum CreateLabelComponent {
+    InputText(CreateInputText),
+    SelectMenu(CreateSelectMenu),
+    // TODO FileSelect
+}
+
+impl From<CreateInputText> for CreateLabelComponent {
+    fn from(input: CreateInputText) -> Self {
+        Self::InputText(input)
+    }
+}
+
+impl From<CreateSelectMenu> for CreateLabelComponent {
+    fn from(input: CreateSelectMenu) -> Self {
+        Self::SelectMenu(input)
+    }
+}
+
+impl CreateLabel {
+    /// A new [`Label`] with required label text (max 45 characters) and a component.
+    pub fn new(label: impl Into<String>, component: impl Into<CreateLabelComponent>) -> Self {
+        CreateLabel {
+            kind: ComponentType::Label,
+            label: label.into(),
+            component: component.into(),
+            description: None,
+        }
+    }
+
+    /// An optional description text for the label; max 100 characters
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
+        self
+    }
+}

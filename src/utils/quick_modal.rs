@@ -4,6 +4,7 @@ use crate::builder::{
     CreateInputText,
     CreateInteractionResponse,
     CreateModal,
+    CreateModalComponent,
 };
 use crate::client::Context;
 use crate::collector::ModalInteractionCollector;
@@ -37,7 +38,7 @@ pub struct QuickModalResponse {
 pub struct CreateQuickModal {
     title: String,
     timeout: Option<std::time::Duration>,
-    input_texts: Vec<CreateInputText>,
+    input_texts: Vec<(String, CreateInputText)>,
 }
 
 #[cfg(feature = "collector")]
@@ -64,23 +65,23 @@ impl CreateQuickModal {
     /// As the `custom_id` field of [`CreateInputText`], just supply an empty
     /// string. All custom IDs are overwritten by [`CreateQuickModal`] when
     /// sending the modal.
-    pub fn field(mut self, input_text: CreateInputText) -> Self {
-        self.input_texts.push(input_text);
+    pub fn field(mut self, label: impl Into<String>, input_text: CreateInputText) -> Self {
+        self.input_texts.push((label.into(), input_text));
         self
     }
 
     /// Convenience method to add a single-line input text field.
     ///
     /// Wraps [`Self::field`].
-    pub fn short_field(self, label: Option<impl Into<String>>) -> Self {
-        self.field(CreateInputText::new(InputTextStyle::Short, label, ""))
+    pub fn short_field(self, label: impl Into<String>) -> Self {
+        self.field(label, CreateInputText::new(InputTextStyle::Short, None::<String>, ""))
     }
 
     /// Convenience method to add a multi-line input text field.
     ///
     /// Wraps [`Self::field`].
-    pub fn paragraph_field(self, label: Option<impl Into<String>>) -> Self {
-        self.field(CreateInputText::new(InputTextStyle::Paragraph, label, ""))
+    pub fn paragraph_field(self, label: impl Into<String>) -> Self {
+        self.field(label, CreateInputText::new(InputTextStyle::Paragraph, None::<String>, ""))
     }
 
     /// # Errors
@@ -98,8 +99,8 @@ impl CreateQuickModal {
                 self.input_texts
                     .into_iter()
                     .enumerate()
-                    .map(|(i, input_text)| {
-                        CreateActionRow::InputText(input_text.custom_id(i.to_string()))
+                    .map(|(i, (label, input_text))| {
+                        CreateModalComponent::input_text(label, input_text.custom_id(i.to_string()))
                     })
                     .collect(),
             ),
