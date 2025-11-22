@@ -1,10 +1,10 @@
 #[cfg(feature = "http")]
 use super::{check_overflow, Builder};
 use super::{
-    CreateActionRow,
     CreateAllowedMentions,
     CreateAttachment,
     CreateEmbed,
+    CreateMessageComponent,
     EditAttachments,
 };
 #[cfg(feature = "http")]
@@ -30,7 +30,7 @@ pub struct EditWebhookMessage {
     #[serde(skip_serializing_if = "Option::is_none")]
     allowed_mentions: Option<CreateAllowedMentions>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) components: Option<Vec<CreateActionRow>>,
+    pub(crate) components: Option<Vec<CreateMessageComponent>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) attachments: Option<EditAttachments>,
 
@@ -127,7 +127,7 @@ impl EditWebhookMessage {
     ///
     /// [`WebhookType::Application`]: crate::model::webhook::WebhookType
     /// [`WebhookType::Incoming`]: crate::model::webhook::WebhookType
-    pub fn components(mut self, components: Vec<CreateActionRow>) -> Self {
+    pub fn components(mut self, components: Vec<CreateMessageComponent>) -> Self {
         self.components = Some(components);
         self
     }

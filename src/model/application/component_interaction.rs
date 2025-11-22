@@ -322,7 +322,6 @@ impl<'de> Deserialize<'de> for ComponentInteractionDataKind {
             },
             ComponentType::Unknown(x) => Self::Unknown(x),
             x @ (ComponentType::ActionRow
-            | ComponentType::InputText
             | ComponentType::Section
             | ComponentType::Thumbnail
             | ComponentType::MediaGallery

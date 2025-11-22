@@ -135,12 +135,13 @@ macro_rules! button_and_select_menu_convenience_methods {
         pub fn button(mut $self, button: super::CreateButton) -> Self {
             let rows = $self$(.$components_path)+.get_or_insert_with(Vec::new);
             let row_with_space_left = rows.last_mut().and_then(|row| match row {
-                super::CreateActionRow::Buttons(buttons) if buttons.len() < 5 => Some(buttons),
+                super::CreateMessageComponent::ActionRow(super::CreateActionRow::Buttons(buttons))
+                    if buttons.len() < 5 => Some(buttons),
                 _ => None,
             });
             match row_with_space_left {
                 Some(row) => row.push(button),
-                None => rows.push(super::CreateActionRow::Buttons(vec![button])),
+                None => rows.push(super::CreateMessageComponent::buttons(vec![button])),
             }
             $self
         }
@@ -151,7 +152,7 @@ macro_rules! button_and_select_menu_convenience_methods {
         pub fn select_menu(mut $self, select_menu: super::CreateSelectMenu) -> Self {
             $self$(.$components_path)+
                 .get_or_insert_with(Vec::new)
-                .push(super::CreateActionRow::SelectMenu(select_menu));
+                .push(super::CreateMessageComponent::select_menu(select_menu));
             $self
         }
     };

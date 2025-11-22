@@ -2,10 +2,10 @@ use super::create_poll::Ready;
 #[cfg(feature = "http")]
 use super::{check_overflow, Builder};
 use super::{
-    CreateActionRow,
     CreateAllowedMentions,
     CreateAttachment,
     CreateEmbed,
+    CreateMessageComponent,
     CreatePoll,
     EditAttachments,
 };
@@ -31,7 +31,7 @@ pub struct CreateInteractionResponseFollowup {
     #[serde(skip_serializing_if = "Option::is_none")]
     allowed_mentions: Option<CreateAllowedMentions>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    components: Option<Vec<CreateActionRow>>,
+    components: Option<Vec<CreateMessageComponent>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     flags: Option<MessageFlags>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -167,7 +167,7 @@ impl CreateInteractionResponseFollowup {
     }
 
     /// Sets the components of this message.
-    pub fn components(mut self, components: Vec<CreateActionRow>) -> Self {
+    pub fn components(mut self, components: Vec<CreateMessageComponent>) -> Self {
         self.components = Some(components);
         self
     }

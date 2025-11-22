@@ -72,14 +72,14 @@ impl CreateQuickModal {
     /// Convenience method to add a single-line input text field.
     ///
     /// Wraps [`Self::field`].
-    pub fn short_field(self, label: impl Into<String>) -> Self {
+    pub fn short_field(self, label: Option<impl Into<String>>) -> Self {
         self.field(CreateInputText::new(InputTextStyle::Short, label, ""))
     }
 
     /// Convenience method to add a multi-line input text field.
     ///
     /// Wraps [`Self::field`].
-    pub fn paragraph_field(self, label: impl Into<String>) -> Self {
+    pub fn paragraph_field(self, label: Option<impl Into<String>>) -> Self {
         self.field(CreateInputText::new(InputTextStyle::Paragraph, label, ""))
     }
 

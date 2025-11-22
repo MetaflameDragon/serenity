@@ -359,14 +359,15 @@ pub struct CreateInputText(InputText);
 impl CreateInputText {
     /// Creates a text input with the given style, label, and custom id (a developer-defined
     /// identifier), leaving all other fields empty.
+    #[allow(deprecated)]
     pub fn new(
         style: InputTextStyle,
-        label: impl Into<String>,
+        label: Option<impl Into<String>>, // TODO Option<impl> sucks, maybe remove altogether?
         custom_id: impl Into<String>,
     ) -> Self {
         Self(InputText {
             style: Some(style),
-            label: Some(label.into()),
+            label: label.map(|l| l.into()),
             custom_id: custom_id.into(),
 
             placeholder: None,
@@ -386,6 +387,7 @@ impl CreateInputText {
     }
 
     /// Sets the label of this input text. Replaces the current value as set in [`Self::new`].
+    #[allow(deprecated)]
     pub fn label(mut self, label: impl Into<String>) -> Self {
         self.0.label = Some(label.into());
         self
@@ -426,5 +428,18 @@ impl CreateInputText {
     pub fn required(mut self, required: bool) -> Self {
         self.0.required = required;
         self
+    }
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq)]
+#[must_use]
+pub struct CreateTextDisplay(TextDisplay);
+
+impl CreateTextDisplay {
+    pub fn new(content: impl Into<String>) -> Self {
+        CreateTextDisplay(TextDisplay {
+            kind: ComponentType::TextDisplay,
+            content: content.into(),
+        })
     }
 }

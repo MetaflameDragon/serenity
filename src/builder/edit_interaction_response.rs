@@ -1,10 +1,10 @@
 #[cfg(feature = "http")]
 use super::Builder;
 use super::{
-    CreateActionRow,
     CreateAllowedMentions,
     CreateAttachment,
     CreateEmbed,
+    CreateMessageComponent,
     EditAttachments,
     EditWebhookMessage,
 };
@@ -71,7 +71,7 @@ impl EditInteractionResponse {
     }
 
     /// Sets the components of this message.
-    pub fn components(self, components: Vec<CreateActionRow>) -> Self {
+    pub fn components(self, components: Vec<CreateMessageComponent>) -> Self {
         Self(self.0.components(components))
     }
     super::button_and_select_menu_convenience_methods!(self.0.components);

@@ -5,8 +5,10 @@ use super::{
     CreateActionRow,
     CreateAllowedMentions,
     CreateAttachment,
+    CreateButton,
     CreateEmbed,
     CreatePoll,
+    CreateSelectMenu,
     EditAttachments,
 };
 #[cfg(feature = "http")]
@@ -188,7 +190,7 @@ pub struct CreateInteractionResponseMessage {
     #[serde(skip_serializing_if = "Option::is_none")]
     flags: Option<InteractionResponseFlags>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    components: Option<Vec<CreateActionRow>>,
+    components: Option<Vec<CreateMessageComponent>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     poll: Option<CreatePoll<Ready>>,
     attachments: EditAttachments,
@@ -302,7 +304,7 @@ impl CreateInteractionResponseMessage {
     }
 
     /// Sets the components of this message.
-    pub fn components(mut self, components: Vec<CreateActionRow>) -> Self {
+    pub fn components(mut self, components: Vec<CreateMessageComponent>) -> Self {
         self.components = Some(components);
         self
     }
@@ -316,6 +318,26 @@ impl CreateInteractionResponseMessage {
     }
 
     super::button_and_select_menu_convenience_methods!(self.components);
+}
+
+#[must_use]
+#[derive(Clone, Debug, Serialize, PartialEq)]
+#[serde(untagged)]
+pub enum CreateMessageComponent {
+    ActionRow(CreateActionRow),
+    Other(serde_json::Value), // TODO TMP
+}
+
+impl CreateMessageComponent {
+    /// Convenience method for [`CreateActionRow::Buttons`]
+    pub const fn buttons(buttons: Vec<CreateButton>) -> CreateMessageComponent {
+        CreateMessageComponent::ActionRow(CreateActionRow::Buttons(buttons))
+    }
+
+    /// Convenience method for [`CreateActionRow::SelectMenu`]
+    pub const fn select_menu(select_menu: CreateSelectMenu) -> CreateMessageComponent {
+        CreateMessageComponent::ActionRow(CreateActionRow::SelectMenu(select_menu))
+    }
 }
 
 // Same as CommandOptionChoice according to Discord, see
