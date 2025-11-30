@@ -120,8 +120,6 @@ impl ComponentInteraction {
 
     /// Deletes the initial interaction response.
     ///
-    /// Does not work on ephemeral messages.
-    ///
     /// # Errors
     ///
     /// May return [`Error::Http`] if the API returns an error. Such as if the

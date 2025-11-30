@@ -109,6 +109,7 @@ impl ModalInteraction {
         builder.execute(cache_http, &self.token).await
     }
 
+    // TODO: check that this does fail on ephemeral messages - it works for ComponentInteraction
     /// Deletes the initial interaction response.
     ///
     /// Does not work on ephemeral messages.
