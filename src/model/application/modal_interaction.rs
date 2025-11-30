@@ -223,19 +223,20 @@ pub struct ModalInteractionData {
     /// The custom id of the modal
     pub custom_id: String,
     /// The components.
-    pub components: Vec<ModalComponent>,
+    pub components: Vec<ModalInteractionComponent>,
 }
 
 #[cfg_attr(feature = "typesize", derive(typesize::derive::TypeSize))]
 #[derive(Clone, Debug, serde::Serialize)]
 #[non_exhaustive]
 #[serde(untagged)]
-pub enum ModalComponent {
+pub enum ModalInteractionComponent {
+    TextDisplay,
     ActionRow(ActionRow),
     Label(Label),
 }
 
-impl<'de> Deserialize<'de> for ModalComponent {
+impl<'de> Deserialize<'de> for ModalInteractionComponent {
     fn deserialize<D>(deserializer: D) -> StdResult<Self, D::Error>
     where
         D: Deserializer<'de>,
@@ -249,17 +250,20 @@ impl<'de> Deserialize<'de> for ModalComponent {
             action_row_components: Option<Vec<ActionRowComponent>>,
             #[serde(rename = "component")]
             label_component: Option<LabelComponent>,
+            #[serde(rename = "content")]
+            text_display_content: Option<String>,
         }
         let json = Json::deserialize(deserializer)?;
 
         Ok(match json.kind {
-            ComponentType::ActionRow => ModalComponent::ActionRow(ActionRow {
+            ComponentType::TextDisplay => ModalInteractionComponent::TextDisplay,
+            ComponentType::ActionRow => ModalInteractionComponent::ActionRow(ActionRow {
                 kind: ComponentType::ActionRow,
                 components: json
                     .action_row_components
                     .ok_or_else(|| D::Error::missing_field("components"))?,
             }),
-            ComponentType::Label => ModalComponent::Label(Label {
+            ComponentType::Label => ModalInteractionComponent::Label(Label {
                 kind: ComponentType::Label,
                 component: json
                     .label_component
@@ -268,7 +272,7 @@ impl<'de> Deserialize<'de> for ModalComponent {
             other => {
                 return Err(D::Error::invalid_value(
                     Unexpected::Unsigned(u8::from(other) as u64),
-                    &"1, 18",
+                    &"1, 10, 18",
                 ))
             },
         })

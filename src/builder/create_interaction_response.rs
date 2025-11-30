@@ -498,6 +498,7 @@ impl CreateModal {
 #[derive(Clone, Debug, Serialize, PartialEq)]
 #[serde(untagged)]
 pub enum CreateModalComponent {
+    TextDisplay(CreateTextDisplay),
     Label(CreateLabel),
     // TODO FileUpload
 }
@@ -505,6 +506,12 @@ pub enum CreateModalComponent {
 impl From<CreateLabel> for CreateModalComponent {
     fn from(label: CreateLabel) -> Self {
         Self::Label(label)
+    }
+}
+
+impl From<CreateTextDisplay> for CreateModalComponent {
+    fn from(text_display: CreateTextDisplay) -> Self {
+        Self::TextDisplay(text_display)
     }
 }
 

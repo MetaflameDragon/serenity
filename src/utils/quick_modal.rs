@@ -124,7 +124,7 @@ impl CreateQuickModal {
             .components
             .iter()
             .filter_map(|comp| match comp {
-                ModalComponent::ActionRow(row) => match row.components.first() {
+                ModalInteractionComponent::ActionRow(row) => match row.components.first() {
                     Some(ActionRowComponent::InputText(text)) => {
                         if let Some(value) = &text.value {
                             Some(value.clone())
@@ -142,7 +142,7 @@ impl CreateQuickModal {
                         None
                     },
                 },
-                ModalComponent::Label(label) => match &label.component {
+                ModalInteractionComponent::Label(label) => match &label.component {
                     LabelComponent::InputText(text) => {
                         if let Some(value) = &text.value {
                             Some(value.clone())
@@ -156,6 +156,8 @@ impl CreateQuickModal {
                         None
                     },
                 },
+                // TextDisplays are non-interactive
+                ModalInteractionComponent::TextDisplay => None,
             })
             .collect();
 
